@@ -31,12 +31,22 @@
 #define PURPLE    0x800080
 #define ORANGE    0x005AFF
 
+#define NO_STAR	-1
+// Position of the LED which is the "star" on the tree
+// Set to NO_STAR to not have a star LED
+int starLED = 0;
+// Number of colours in the starColours sequence
+const int starColoursCount = 10;
+// Colour sequence that the "star" LED will cycle through whenever
+// the main tree colour changes
+uint32_t starColours[starColoursCount] = { RED, WHITE, GREEN, CYAN, MAGENTA, WARMWHITE, PURPLE, ORANGE, BLUE, YELLOW };
+// Final colour that the star is set to in between changes
+uint32_t starEndColour = YELLOW;
+
 uint8_t dataPin  = 2;    
 uint8_t clockPin = 3;    
 Adafruit_WS2801 strip = Adafruit_WS2801(LIGHT_COUNT, dataPin, clockPin);
 
-
-static uint16_t c;
 
 // Local Network Settings
 byte mac[] = { 0xD4, 0x28, 0xB2, 0xFF, 0xFF, 0xFF }; // Must be unique on local network
@@ -133,40 +143,43 @@ void loop() {
                 Serial.print(c);
                 
                 if (stopParsing == false) {
-                  if (c == 'r') currentCommand = RED;
-                  else if (c == 'g') {
+                  switch (c) {
+                  case 'r':
+                    currentCommand = RED;
+                    break;
+                  case 'g':
                     currentCommand = GREEN;
                     stopParsing = true;
-                  }
-                  else if (c == 'c') {
+                    break;
+                  case 'c':
                     currentCommand = CYAN;
                     stopParsing = true;
-                  }
-                  else if (c == 'm') {
+                    break;
+                  case 'm':
                     currentCommand = MAGENTA;
                     stopParsing = true;
-                  }
-                  else if (c == 'y') {
+                    break;
+                  case 'y':
                     currentCommand = YELLOW;
                     stopParsing = true;
-                  }
-                  else if (c == 'p') {
+                    break;
+                  case 'p':
                     currentCommand = PURPLE;
                     stopParsing = true;
-                  }
-                  else if (c == 'o') {
+                    break;
+                  case 'o':
                     currentCommand = ORANGE;
                     stopParsing = true;
-                  }
-                  else if (c == 'w') {
+                    break;
+                  case 'w':
                     c = http.read();
                     if (c == 'h') currentCommand = WHITE;
                     else if (c == 'a') currentCommand = WARMWHITE;
                     stopParsing = true;
-                  }
-                  else if (c == 'b') {
+                    break;
+                  case 'b':
                     c = http.read();
-                    if (c = 'a') {
+                    if (c == 'l') {
                       c = http.read();
                       if (c == 'a') currentCommand = BLACK;
                       else if (c == 'u') currentCommand = BLUE;
@@ -210,11 +223,22 @@ void loop() {
 // fill the dots one after the other with said color
 void colorWipe(uint32_t c, uint8_t wait) {
   int i;
-  
+  int starColourIdx = 0;
+
   for (i=0; i < strip.numPixels(); i++) {
       strip.setPixelColor(i, c);
+      if (starLED != NO_STAR) {
+        // Show a star
+        strip.setPixelColor(starLED, starColours[starColourIdx++]);
+        starColourIdx = starColourIdx % starColoursCount;
+      }
       strip.show();
       delay(wait);
+  }
+  if (starLED != NO_STAR) {
+    // Ensure the star ends on the right colour
+    strip.setPixelColor(starLED, starEndColour);
+    strip.show();
   }
 }
 
