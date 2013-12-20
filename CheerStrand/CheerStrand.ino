@@ -34,12 +34,12 @@
 #define NO_STAR	-1
 // Position of the LED which is the "star" on the tree
 // Set to NO_STAR to not have a star LED
-int starLED = 0;
+int starLED = 151;
 // Number of colours in the starColours sequence
 const int starColoursCount = 10;
 // Colour sequence that the "star" LED will cycle through whenever
 // the main tree colour changes
-uint32_t starColours[starColoursCount] = { RED, WHITE, GREEN, CYAN, MAGENTA, WARMWHITE, PURPLE, ORANGE, BLUE, YELLOW };
+uint32_t starColours[starColoursCount] = { RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA, PURPLE };
 // Final colour that the star is set to in between changes
 uint32_t starEndColour = YELLOW;
 
