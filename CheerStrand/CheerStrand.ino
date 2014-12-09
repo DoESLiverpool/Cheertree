@@ -12,8 +12,14 @@
 
 #include <SPI.h>
 #include <HttpClient.h>
+// Undefine this to get the Ethernet version
+#define WIFI
+#ifdef WIFI
+#include <WiFi.h>
+#else
 #include <Ethernet.h>
 #include <EthernetClient.h>
+#endif
 #include "Adafruit_WS2801.h"
 
 // Color Effects Setup
@@ -49,7 +55,15 @@ Adafruit_WS2801 strip = Adafruit_WS2801(LIGHT_COUNT, dataPin, clockPin);
 
 
 // Local Network Settings
+#ifdef WIFI
+char ssid[] = "YOUR NETWORK"; //  your network SSID (name) 
+char pass[] = "NETWORK PASSWORD";    // your network password (use for WPA, or use as key for WEP)
+int keyIndex = 0;            // your network key Index number (needed only for WEP)
+
+int status = WL_IDLE_STATUS;
+#else
 byte mac[] = { 0xD4, 0x28, 0xB2, 0xFF, 0xFF, 0xFF }; // Must be unique on local network
+#endif
 
 // Name of the server we want to connect to
 const char kHostname[] = "api.thingspeak.com";
@@ -83,14 +97,40 @@ void setup() {
   // show initial status
   colorWipe(WHITE, 2);
   
-    while (Ethernet.begin(mac) != 1)
+#ifdef WIFI
+  // check for the presence of the shield:
+  if (WiFi.status() == WL_NO_SHIELD) {
+    Serial.println("WiFi shield not present"); 
+    // don't continue:
+    while(true);
+  } 
+  
+  // attempt to connect to Wifi network:
+  while (status != WL_CONNECTED) { 
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:    
+    status = WiFi.begin(ssid, pass);
+  
+    colorWipe(RED, 1);
+    delay(1000);
+    colorWipe(ORANGE, 1);
+    delay(1000);
+
+    // wait 10 seconds for connection:
+    delay(10000);
+  } 
+#else
+  while (Ethernet.begin(mac) != 1)
   {
     Serial.println("Error getting IP address via DHCP, trying again...");
     colorWipe(RED, 1);
     delay(1000);
     colorWipe(ORANGE, 1);
     delay(1000);
-  }
+    delay(15000);
+  }  
+#endif
   
   //show ethernet is connected
   colorWipe(lastCommand, 2);
@@ -104,7 +144,11 @@ void loop() {
   }
 
   int err =0;
+#ifdef WIFI
+  WiFiClient c;
+#else
   EthernetClient c;
+#endif
   HttpClient http(c);
   
   err = http.get(kHostname, kPath);
