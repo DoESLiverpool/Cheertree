@@ -26,6 +26,7 @@
 #define LIGHT_COUNT 152.// Total # of lights on string (usually 50, 48, or 36)
 
 #define WARMWHITE 0xFFDFDF
+#define OLDLACE   0xFFDFDF
 #define WHITE     0xFFFFFF
 #define BLACK     0x000000
 #define RED       0x0000FF
@@ -36,6 +37,7 @@
 #define YELLOW    0x00FFFF
 #define PURPLE    0x800080
 #define ORANGE    0x005AFF
+#define PINK      0xFFC0CB
 
 #define NO_STAR	-1
 // Position of the LED which is the "star" on the tree
@@ -208,11 +210,15 @@ void loop() {
                     stopParsing = true;
                     break;
                   case 'p':
-                    currentCommand = PURPLE;
+                    c = http.read();
+                    if (c == 'u') currentCommand = PURPLE;
+                    else if (c == 'i') currentCommand = PINK;
                     stopParsing = true;
                     break;
                   case 'o':
-                    currentCommand = ORANGE;
+                    c = http.read();
+                    if (c == 'r') currentCommand = ORANGE;
+                    else if (c == 'l') currentCommand = OLDLACE;
                     stopParsing = true;
                     break;
                   case 'w':
