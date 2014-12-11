@@ -13,7 +13,7 @@
 #include <SPI.h>
 #include <HttpClient.h>
 // Undefine this to get the Ethernet version
-#define WIFI
+//#define WIFI
 #ifdef WIFI
 #include <WiFi.h>
 #else
@@ -23,26 +23,26 @@
 #include "Adafruit_WS2801.h"
 
 // Color Effects Setup
-#define LIGHT_COUNT 152.// Total # of lights on string (usually 50, 48, or 36)
+#define LIGHT_COUNT 50.// Total # of lights on string (usually 50, 48, or 36)
 
-#define WARMWHITE 0xFFDFDF
-#define OLDLACE   0xFFDFDF
+#define WARMWHITE 0xDFDFFF
+#define OLDLACE   0xDFDFFF
 #define WHITE     0xFFFFFF
 #define BLACK     0x000000
-#define RED       0x0000FF
+#define RED       0xFF0000
 #define GREEN     0x00FF00
-#define BLUE      0xFF0000
-#define CYAN      0xFFFF00
+#define BLUE      0x0000FF
+#define CYAN      0x00FFFF
 #define MAGENTA   0xFF00FF
-#define YELLOW    0x00FFFF
+#define YELLOW    0xFFFF00
 #define PURPLE    0x800080
-#define ORANGE    0x005AFF
-#define PINK      0xFFC0CB
+#define ORANGE    0xFF5A00
+#define PINK      0xCBC0FF
 
 #define NO_STAR	-1
 // Position of the LED which is the "star" on the tree
 // Set to NO_STAR to not have a star LED
-int starLED = 151;
+int starLED = 49;
 // Number of colours in the starColours sequence
 const int starColoursCount = 10;
 // Colour sequence that the "star" LED will cycle through whenever
