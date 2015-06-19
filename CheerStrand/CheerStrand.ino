@@ -192,7 +192,7 @@ void loop() {
                   switch (c) {
                   case 'r':
                     currentCommand = RED;
-                    
+                    stopParsing = true;
                     break;
                   case 'g':
                     currentCommand = GREEN;
