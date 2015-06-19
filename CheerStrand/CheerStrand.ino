@@ -192,6 +192,7 @@ void loop() {
                   switch (c) {
                   case 'r':
                     currentCommand = RED;
+                    
                     break;
                   case 'g':
                     currentCommand = GREEN;
