@@ -2,42 +2,45 @@
 
  CheerLights!
  
- CheerLights Channel --> Arduino Ethernet --> WS2801 LED strip
+ CheerLights Channel --> Arduino Ethernet --> Addressable LED strip
  
  requires: 
-     https://github.com/adafruit/Adafruit-WS2801-Library
+     HTTP Client Library
      https://github.com/amcewen/HttpClient
- 
+     FastLED library
+     http://fastled.io/
 */
+
+// Undefine this to get the Ethernet version
+#define WIFI
+
 
 #include <SPI.h>
 #include <HttpClient.h>
-// Undefine this to get the Ethernet version
-#define WIFI
 #ifdef WIFI
 #include <WiFi.h>
 #else
 #include <Ethernet.h>
 #include <EthernetClient.h>
 #endif
-#include "Adafruit_WS2801.h"
+#include "FastLED.h"
 
 // Color Effects Setup
-#define LIGHT_COUNT 152.// Total # of lights on string (usually 50, 48, or 36)
+#define NUM_LEDS 152 // Total # of lights on string (usually 50, 48, or 36)
 
 #define WARMWHITE 0xFFDFDF
 #define OLDLACE   0xFFDFDF
 #define WHITE     0xFFFFFF
 #define BLACK     0x000000
-#define RED       0x0000FF
+#define RED       0xFF0000
 #define GREEN     0x00FF00
-#define BLUE      0xFF0000
-#define CYAN      0xFFFF00
+#define BLUE      0x0000FF
+#define CYAN      0x00FFFF
 #define MAGENTA   0xFF00FF
-#define YELLOW    0x00FFFF
+#define YELLOW    0xFFFF00
 #define PURPLE    0x800080
-#define ORANGE    0x005AFF
-#define PINK      0xFFC0CB
+#define ORANGE    0xFF5A00
+#define PINK      0xCBC0FF
 
 #define NO_STAR	-1
 // Position of the LED which is the "star" on the tree
@@ -51,10 +54,10 @@ uint32_t starColours[starColoursCount] = { RED, ORANGE, YELLOW, GREEN, CYAN, BLU
 // Final colour that the star is set to in between changes
 uint32_t starEndColour = YELLOW;
 
-uint8_t dataPin  = 2;    
-uint8_t clockPin = 3;    
-Adafruit_WS2801 strip = Adafruit_WS2801(LIGHT_COUNT, dataPin, clockPin);
-
+#define DATA_PIN 2
+#define CLOCK_PIN 3
+//Define the array of LEDs
+CRGB leds[NUM_LEDS];
 
 // Local Network Settings
 #ifdef WIFI
@@ -91,13 +94,18 @@ void setup() {
   
   Serial.flush();
   delay(100);
+  
+  // Choose your attached LED strip, colour order set uncommented
+  // e.g.
+  // FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, GRB>(leds, NUM_LEDS);
+  // FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
-  strip.begin();
-  // Update LED contents, to start they are all 'off'
-  strip.show();
+  // set all the LEDs to off
+  colorWipe(BLACK, 0);
   
   // show initial status
-  colorWipe(WHITE, 2);
+  colorWipe(WHITE, 10);
   
 #ifdef WIFI
   // check for the presence of the shield:
@@ -276,20 +284,20 @@ void colorWipe(uint32_t c, uint8_t wait) {
   int i;
   int starColourIdx = 0;
 
-  for (i=0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
+  for (i=0; i < NUM_LEDS; i++) {
+      leds[i] = c;
       if (starLED != NO_STAR) {
         // Show a star
-        strip.setPixelColor(starLED, starColours[starColourIdx++]);
+        leds[starLED] = starColours[starColourIdx++];
         starColourIdx = starColourIdx % starColoursCount;
       }
-      strip.show();
+      FastLED.show();
       delay(wait);
   }
   if (starLED != NO_STAR) {
     // Ensure the star ends on the right colour
-    strip.setPixelColor(starLED, starEndColour);
-    strip.show();
+    leds[starLED] = starEndColour;
+    FastLED.show();
   }
 }
 
