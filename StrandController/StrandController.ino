@@ -15,9 +15,9 @@
 #include "FastLED.h"
 
 // Color Effects Setup
-#define NUM_LEDS 8 // Total # of lights on string (usually 50, 48, or 36)
+#define NUM_LEDS 50 // Total # of lights on string (usually 50, 48, or 36)
 
-#define BRIGHTNESS 20 // overall strip brightness level
+#define BRIGHTNESS 84 // overall strip brightness level
 #define STAR_BRIGHTNESS 150 // you might want to adjust this if encapsulated
 
 // some case constants:
@@ -60,7 +60,7 @@
 #define NO_STAR	-1
 // Position of the LED which is the "star" on the tree
 // Set to NO_STAR to not have a star LED
-int starLED = 7;
+int starLED = 49;
 // Number of colours in the starColours sequence
 const int starColoursCount = 10;
 // Colour sequence that the "star" LED will cycle through whenever
@@ -73,28 +73,27 @@ uint32_t starEndColour = YELLOW;
 #define CLOCK_PIN 3
 //Define the array of LEDs
 CRGB leds[NUM_LEDS];
-int current_brightness[NUM_LEDS];
-int target_brightness[NUM_LEDS];
+uint8_t current_brightness[NUM_LEDS];
+uint8_t target_brightness[NUM_LEDS];
 uint8_t rate_of_change[NUM_LEDS];
 uint8_t state[NUM_LEDS];
 uint32_t change_time[NUM_LEDS];
 
 // Variable Setup
-uint32_t lastCommand = BLACK;
-uint32_t currentCommand = GREEN;
+uint32_t lastCommand = WHITE;
+uint32_t currentCommand = WHITE;
 
 void setup() {
   // Setup Serial
   Serial.begin(9600);
-  delay(100);
 
   Serial.flush();
   delay(100);
 
   // Choose your attached LED strip, colour order set uncommented
   // e.g.
-  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
-  //FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
+  // FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
   // FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
   // set all the LEDs to off
@@ -107,16 +106,17 @@ void setup() {
 void loop() {
   // change the colour has changed
   if (currentCommand != lastCommand) {
-    //Timer1.detachInterrupt();
     colorWipe(currentCommand, 50);
-    //Timer1.attachInterrupt(twinkleLED);
     lastCommand = currentCommand;
+    Serial.print(F("OK"));
   }
 
   animateLEDs();
 
   if (Serial.available()) {
+    // quick delay, so we don't miss the end of the instruction
     delay(100);
+
     char c = Serial.read();
     if (c == 'r' || c == 'R') {
       currentCommand = RED;
@@ -201,22 +201,6 @@ void colorWipe(uint32_t c, uint8_t wait) {
   }
 }
 
-//void twinkleLED() {
-  // vary the light level of leds in a random pattern
-  // first reset everything else to normal
-  //int chosenLED = random(NUM_LEDS);
-  //for (int i=0; i < NUM_LEDS; i++) {
-    //leds[i].maximizeBrightness();
-    //if (i == starLED) {
-      //leds[i].nscale8_video(STAR_BRIGHTNESS);
-    //} else if (i == chosenLED && !random(3)) { // chance of having a bright flash
-      //leds[i].nscale8_video(MAX_BRIGHTNESS); //random8(BRIGHTNESS, MAX_BRIGHTNESS));
-    //} else {
-      //leds[i].nscale8_video(BRIGHTNESS);
-    //}
-  //}
-//}
-
 void animateLEDs()
 {
   unsigned long frame_time = millis();
@@ -244,7 +228,6 @@ void animateLEDs()
         if (rate_of_change[i] < FALL_MIN) rate_of_change[i] = FALL_MIN;
         target_brightness[i] = random(LOW_MIN, LOW_MAX);
         state[i] = FALL;
-        //echo = true;
      }
     } else if (state[i] == FALL) {
       // decrement the led level
@@ -268,7 +251,6 @@ void animateLEDs()
         if (rate_of_change[i] < RISE_MIN) rate_of_change[i] = RISE_MIN;
         target_brightness[i] = random(HIGH_MIN, HIGH_MAX);
         state[i] = RISE;
-        //echo = true;
       }
      } else {
       // reset the state to rise
