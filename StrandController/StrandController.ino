@@ -16,9 +16,10 @@
 
 // Color Effects Setup
 #define NUM_LEDS 50 // Total # of lights on string (usually 50, 48, or 36)
+#define FIRST_LED 12 // ignore any LEDs before this number
 
-#define BRIGHTNESS 84 // overall strip brightness level
-#define STAR_BRIGHTNESS 150 // you might want to adjust this if encapsulated
+#define BRIGHTNESS 30 // overall strip brightness level
+#define STAR_BRIGHTNESS 100 // you might want to adjust this if encapsulated
 
 // some case constants:
 #define RISE 0
@@ -27,21 +28,21 @@
 #define PAUSE 3
 
 // Set the max and min values for flicker
-#define LOW_MIN 50
-#define LOW_MAX 84
-#define HIGH_MIN 84
-#define HIGH_MAX 120
+#define LOW_MIN 10
+#define LOW_MAX 30
+#define HIGH_MIN 30
+#define HIGH_MAX 40
 // hold length at high value
-#define HOLD_MIN 50  //milliseconds
-#define HOLD_MAX 250 //milliseconds
+#define HOLD_MIN 100  //milliseconds
+#define HOLD_MAX 500 //milliseconds
 // pause length at low value
-#define PAUSE_MAX 10 //milliseconds
-#define PAUSE_MIN 50 //milliseconds
+#define PAUSE_MAX 100 //milliseconds
+#define PAUSE_MIN 500 //milliseconds
 // rate of rise and fall
-#define RISE_MIN 50 // dV_out/ms
-#define RISE_MAX 1000   // dV_out/ms
-#define FALL_MIN 50 // dV_out/ms
-#define FALL_MAX 250 // dV_out/ms
+#define RISE_MIN 30 // dV_out/ms
+#define RISE_MAX 100   // dV_out/ms
+#define FALL_MIN 30 // dV_out/ms
+#define FALL_MAX 100 // dV_out/ms
 
 #define WARMWHITE 0xFFDFDF
 #define OLDLACE   0xFFDFDF
@@ -92,8 +93,8 @@ void setup() {
 
   // Choose your attached LED strip, colour order set uncommented
   // e.g.
-  // FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
-  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+  // FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
   // FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
   // set all the LEDs to off
@@ -187,10 +188,14 @@ void colorWipe(uint32_t c, uint8_t wait) {
         leds[starLED] = starColours[starColourIdx++];
         starColourIdx = starColourIdx % starColoursCount;
       }
-      leds[i].nscale8_video(BRIGHTNESS);
-      //FastLED.setBrightness(BRIGHTNESS);
-      FastLED.show();
-      delay(wait);
+      if (i >= FIRST_LED) {
+        leds[i].nscale8_video(BRIGHTNESS);
+        //FastLED.setBrightness(BRIGHTNESS);
+        FastLED.show();
+        delay(wait);
+      } else {
+        leds[i] = 0;
+      }
   }
   if (starLED != NO_STAR) {
     // Ensure the star ends on the right colour
@@ -268,8 +273,10 @@ void setBrightness(uint8_t led_number) {
   if (starLED != NO_STAR && led_number == starLED) {
     leds[led_number] = starEndColour;
     leds[led_number].nscale8_video(STAR_BRIGHTNESS);
-  } else {
+  } else if (led_number >= FIRST_LED) {
     leds[led_number] = currentCommand;
     leds[led_number].nscale8_video(current_brightness[led_number]);
+  } else {
+    leds[led_number] = 0;
   }
 }
